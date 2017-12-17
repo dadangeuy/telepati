@@ -11,16 +11,21 @@ public class LoginView {
     @FXML
     private TextField usernameField;
     @FXML
+    private TextField urlField;
+    @FXML
     private Button loginButton;
 
     @FXML
     public void onClickLoginButton() throws ExecutionException, InterruptedException {
-        String username = usernameField.getText().trim();
         Stage stage = (Stage) loginButton.getScene().getWindow();
         stage.close();
     }
 
     public String getUsername() {
         return usernameField.getText();
+    }
+
+    public String getUrl() {
+        return urlField.getText();
     }
 }

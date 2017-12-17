@@ -30,7 +30,7 @@ public class TelepatiClientGui extends Application {
         loginStage.setScene(loginScene);
         LoginView loginView = loader.getController();
         loginStage.showAndWait();
-        String username = loginView.getUsername();
+        String username = loginView.getUsername(), url = loginView.getUrl();
         if (username == null || username.isEmpty()) {
             stop();
             return;
@@ -78,14 +78,23 @@ public class TelepatiClientGui extends Application {
             }
         };
 
-        client = new TelepatiClient(
-                username,
-                new StompSessionCallback(TFQuiz.class, updateQuiz)
-        );
+        if (url == null || url.isEmpty()) {
+            client = new TelepatiClient(
+                    "ws://localhost:8000",
+                    username,
+                    new StompSessionCallback(TFQuiz.class, updateQuiz)
+            );
+        }
+        else {
+            client = new TelepatiClient(
+                    url,
+                    username,
+                    new StompSessionCallback(TFQuiz.class, updateQuiz)
+            );
+        }
         client.subscribe(Endpoint.quiz, new StompSessionCallback(TFQuiz.class, updateQuiz));
         client.subscribe(Endpoint.info, new StompSessionCallback(TextMessage.class, infoCallback));
         client.subscribe(Endpoint.scoreboard, new StompSessionCallback(Map.class, scoreboardCallback));
-
         client.join();
 
         stage.show();

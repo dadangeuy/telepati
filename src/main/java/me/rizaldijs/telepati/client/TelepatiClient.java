@@ -1,5 +1,6 @@
 package me.rizaldijs.telepati.client;
 
+import me.rizaldijs.telepati.common.Endpoint;
 import me.rizaldijs.telepati.common.TFQuizAnswer;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -14,13 +15,13 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import java.util.concurrent.ExecutionException;
 
 public class TelepatiClient {
-    public String url = "ws://localhost:8000/connect";
     private StompSession session;
     private String username;
     private WebSocketClient client;
     private WebSocketStompClient stompClient;
 
     public TelepatiClient(
+            String url,
             String username,
             StompSessionHandler connectHandler
     ) throws ExecutionException, InterruptedException {
@@ -30,7 +31,7 @@ public class TelepatiClient {
         stompClient.setMessageConverter(new MappingJackson2MessageConverter());
         stompClient.setTaskScheduler(new ConcurrentTaskScheduler());
 
-        ListenableFuture<StompSession> futureStompSession = stompClient.connect(url, connectHandler);
+        ListenableFuture<StompSession> futureStompSession = stompClient.connect(url + Endpoint.connect, connectHandler);
         session = futureStompSession.get();
     }
 
@@ -39,17 +40,17 @@ public class TelepatiClient {
     }
 
     public void join() {
-        session.send("/client/join", username);
+        session.send(Endpoint.join, username);
     }
 
     public void leave() {
-        session.send("/client/leave", username);
+        session.send(Endpoint.leave, username);
         session.disconnect();
         stompClient.stop();
     }
 
     public void answer(Boolean answer) {
-        session.send("/client/answer", new TFQuizAnswer(username, answer));
+        session.send(Endpoint.answer, new TFQuizAnswer(username, answer));
     }
 
 }
