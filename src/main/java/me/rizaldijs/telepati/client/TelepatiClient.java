@@ -1,11 +1,10 @@
 package me.rizaldijs.telepati.client;
 
-import lombok.Setter;
 import me.rizaldijs.telepati.common.TFQuizAnswer;
-import me.rizaldijs.telepati.common.TextMessage;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandler;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.socket.client.WebSocketClient;
@@ -35,16 +34,8 @@ public class TelepatiClient {
         session = futureStompSession.get();
     }
 
-    public void subscribeQuiz(StompSessionHandler quizHandler) {
-        session.subscribe("/server/play", quizHandler);
-    }
-
-    public void subscribePlayers(StompSessionHandler playersHandler) {
-        session.subscribe("/server/players", playersHandler);
-    }
-
-    public void subscribeInfo(StompSessionHandler infoHandler) {
-        session.subscribe("/server/info", infoHandler);
+    public void subscribe(String source, StompSessionHandler handler) {
+        session.subscribe(source, handler);
     }
 
     public void join() {

@@ -6,11 +6,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import lombok.Getter;
+import me.rizaldijs.telepati.common.Endpoint;
 import me.rizaldijs.telepati.common.TFQuiz;
 import me.rizaldijs.telepati.common.TextMessage;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.List;
+import java.util.Map;
 
 public class TelepatiClientGui extends Application {
     public static TelepatiClient client;
@@ -45,40 +47,34 @@ public class TelepatiClientGui extends Application {
         ListenableFutureCallback<TFQuiz> updateQuiz = new ListenableFutureCallback<TFQuiz>() {
             @Override
             public void onFailure(Throwable throwable) {
-                System.out.println("quiz callback");
                 telepatiView.updateInfo(throwable.getMessage());
             }
 
             @Override
             public void onSuccess(TFQuiz tfQuiz) {
-                System.out.println("quiz callback");
                 telepatiView.updateQuiz(tfQuiz.getQuestion());
-            }
-        };
-        ListenableFutureCallback<List> updatePlayers = new ListenableFutureCallback<List>() {
-            @Override
-            public void onFailure(Throwable throwable) {
-                System.out.println("players callback");
-                telepatiView.updateInfo(throwable.getMessage());
-            }
-
-            @Override
-            public void onSuccess(List list) {
-                System.out.println("players callback");
-                telepatiView.updatePlayers(list);
             }
         };
         ListenableFutureCallback<TextMessage> infoCallback = new ListenableFutureCallback<TextMessage>() {
             @Override
             public void onFailure(Throwable throwable) {
-                System.out.println("Info Callback");
                 throwable.printStackTrace();
             }
 
             @Override
             public void onSuccess(TextMessage textMessage) {
-                System.out.println("Info Callback");
                 telepatiView.updateInfo(textMessage.getContent());
+            }
+        };
+        ListenableFutureCallback<Map<String, Integer>> scoreboardCallback = new ListenableFutureCallback<Map<String, Integer>>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                throwable.printStackTrace();
+            }
+
+            @Override
+            public void onSuccess(Map<String, Integer> stringIntegerMap) {
+                telepatiView.updateScoreboards(stringIntegerMap);
             }
         };
 
@@ -86,9 +82,9 @@ public class TelepatiClientGui extends Application {
                 username,
                 new StompSessionCallback(TFQuiz.class, updateQuiz)
         );
-        client.subscribeQuiz(new StompSessionCallback(TFQuiz.class, updateQuiz));
-        client.subscribePlayers(new StompSessionCallback(List.class, updatePlayers));
-        client.subscribeInfo(new StompSessionCallback(TextMessage.class, infoCallback));
+        client.subscribe(Endpoint.quiz, new StompSessionCallback(TFQuiz.class, updateQuiz));
+        client.subscribe(Endpoint.info, new StompSessionCallback(TextMessage.class, infoCallback));
+        client.subscribe(Endpoint.scoreboard, new StompSessionCallback(Map.class, scoreboardCallback));
 
         client.join();
 
